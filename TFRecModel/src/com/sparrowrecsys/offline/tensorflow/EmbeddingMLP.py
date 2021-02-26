@@ -27,8 +27,8 @@ train_dataset = get_dataset(training_samples_file_path)
 test_dataset = get_dataset(test_samples_file_path)
 
 # genre features vocabulary
-genre_vocab = ['Film-Noir', 'Action', 'Adventure', 'Horror', 'Romance', 'War', 'Comedy', 'Western', 'Documentary',
-               'Sci-Fi', 'Drama', 'Thriller',
+genre_vocab = ['Film-Noir', 'Action', 'Adventure', 'Horror', 'Romance', 'War', 'Comedy',
+               'Western', 'Documentary', 'Sci-Fi', 'Drama', 'Thriller',
                'Crime', 'Fantasy', 'Animation', 'IMAX', 'Mystery', 'Children', 'Musical']
 
 GENRE_FEATURES = {

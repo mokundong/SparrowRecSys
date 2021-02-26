@@ -1,10 +1,11 @@
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession
+from collections import defaultdict
+
 import pyspark.sql as sql
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
-from collections import defaultdict
-from pyspark.sql import functions as F
 
 NUMBER_PRECISION = 2
 
@@ -37,16 +38,16 @@ def addMovieFeatures(movieSamples, ratingSamplesWithLabel):
         .withColumn('title', udf(lambda x: x.strip()[:-6].strip(), StringType())('title')) \
         .drop('title')
     # split genres
-    samplesWithMovies3 = samplesWithMovies2.withColumn('movieGenre1', split(F.col('genres'), "\\|")[0]) \
+    samplesWithMovies3 = samplesWithMovies2 \
+        .withColumn('movieGenre1', split(F.col('genres'), "\\|")[0]) \
         .withColumn('movieGenre2', split(F.col('genres'), "\\|")[1]) \
         .withColumn('movieGenre3', split(F.col('genres'), "\\|")[2])
     # add rating features
-    movieRatingFeatures = samplesWithMovies3.groupBy('movieId').agg(F.count(F.lit(1)).alias('movieRatingCount'),
-                                                                    format_number(F.avg(F.col('rating')),
-                                                                                  NUMBER_PRECISION).alias(
-                                                                        'movieAvgRating'),
-                                                                    F.stddev(F.col('rating')).alias(
-                                                                        'movieRatingStddev')).fillna(0) \
+    movieRatingFeatures = samplesWithMovies3.groupBy('movieId') \
+        .agg(F.count(F.lit(1)).alias('movieRatingCount'),
+             format_number(F.avg(F.col('rating')), NUMBER_PRECISION) \
+             .alias('movieAvgRating'), F.stddev(F.col('rating')) \
+             .alias('movieRatingStddev')).fillna(0) \
         .withColumn('movieRatingStddev', format_number(F.col('movieRatingStddev'), NUMBER_PRECISION))
     # join movie rating features
     samplesWithMovies4 = samplesWithMovies3.join(movieRatingFeatures, on=['movieId'], how='left')
